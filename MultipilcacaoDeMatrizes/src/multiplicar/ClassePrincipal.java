@@ -7,10 +7,11 @@ public class ClassePrincipal {
 	 */
 	public static void main(String[] args) {
 		
-		MultiplicaMatriz multiplicaMatriz = new MultiplicaMatriz(20, 20, 20, 20);
-		multiplicaMatriz.povoarMatrizRandomicamente();
+		MultiplicaMatriz multiplicaMatriz = new MultiplicaMatriz(500, 500, 500, 500);
+		multiplicaMatriz.povoaTodasMatrizesRandomicamente();
 		multiplicaMatriz.multiplicarSemThreads();
 		multiplicaMatriz.multiplicarComThreads();
+		multiplicaMatriz.multiplicarMatrizComThreadsSegundaAbordagem();
 
 	}
 
