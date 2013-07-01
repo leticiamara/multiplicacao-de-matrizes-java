@@ -10,14 +10,15 @@ public class MultiplicaMatriz {
 	
 	private Integer matriz1[][];
 	private Integer matriz2[][];
-	private Scanner leitura; 
 	private Integer linhaMatriz1;
 	private Integer colunaMatriz1;
 	private Integer linhaMatriz2;
 	private Integer colunaMatriz2;
 	private Integer matrizResultante[][];
 	private Integer matrizResultanteComThread[][];
+	private Integer matrizResultanteComThreadAborgadem2[][];
 	private ArrayList<Thread> threads;
+	private ArrayList<Thread> threads2;
 	
 	public MultiplicaMatriz(int linhaMatriz1, int colunaMatriz1, int linhaMatriz2, int colunaMatriz2) {
 		this.linhaMatriz1 = linhaMatriz1;
@@ -27,54 +28,30 @@ public class MultiplicaMatriz {
 		this.matriz1 = new Integer[this.linhaMatriz1][this.colunaMatriz1];
 		this.matriz2 = new Integer[this.linhaMatriz2][this.colunaMatriz2];
 		this.threads = new ArrayList<Thread>();
+		this.threads2 = new ArrayList<Thread>();
 	}
 	
-	public void povoarMatrizRandomicamente(){
+	public void povoaTodasMatrizesRandomicamente(){
+		povoarMatrizRandomicamente(matriz1);
+		povoarMatrizRandomicamente(matriz2);
+	}
+	
+	public void povoarMatrizRandomicamente(Integer matriz[][]){
 		Random gerador = new Random();
 		
-		//Povoando matriz 1
 		for (int indiceLinha = 0; indiceLinha < linhaMatriz1; indiceLinha++) {
 			for (int indiceColuna = 0; indiceColuna < colunaMatriz1; indiceColuna++) {
 				int numero = gerador.nextInt(10);
-				matriz1[indiceLinha][indiceColuna] = numero;
+				matriz[indiceLinha][indiceColuna] = numero;
 			}
-		}
-		
-		//Povoando matriz 2
-		for (int indiceLinha = 0; indiceLinha < linhaMatriz2; indiceLinha++) {
-			for (int indiceColuna = 0; indiceColuna < colunaMatriz2; indiceColuna++) {
-				int numero2 = gerador.nextInt(10);
-				matriz2[indiceLinha][indiceColuna] = numero2;
-			}
-		}
-		imprimirMatrizes1e2Preenchidas();
-	}
-	
-	public void imprimirMatrizes1e2Preenchidas(){
-		
-		//Imprimindo matriz 1
-		System.out.println("Matriz 1");
-		for (int linha = 0; linha < linhaMatriz1; linha++) {
-	        for (int coluna = 0; coluna < colunaMatriz1; coluna++) {
-	        	System.out.print(matriz1[linha][coluna]+ " ");
-	        }
-	        System.out.println(" ");
-		}
-		
-		//Imprimindo matriz 2
-		System.out.println("Matriz 2");
-		for (int linha = 0; linha < linhaMatriz2; linha++) {
-	        for (int coluna = 0; coluna < colunaMatriz2; coluna++) {
-	        	System.out.print(matriz2[linha][coluna]+ " ");
-	        }
-	        System.out.println(" ");
 		}
 	}
 	
 	public void multiplicarSemThreads(){
 		matrizResultante = new Integer[linhaMatriz1][colunaMatriz2];
-		povoarComZeroMatrizResultante();
+		povoarComZeroMatrizResultante(matrizResultante);
 		
+		long tempoResposta = System.currentTimeMillis();
 		for (int linha = 0; linha < linhaMatriz1; linha++) {
 	        for (int coluna = 0; coluna < colunaMatriz2; coluna++) {
 	            for (int indiceColunaMatriz1 = 0; indiceColunaMatriz1 < colunaMatriz1; indiceColunaMatriz1++) {
@@ -82,12 +59,14 @@ public class MultiplicaMatriz {
 	            }  
 	        }
 	    }
-		this.imprimirMatrizResultante();
+		tempoResposta = System.currentTimeMillis() - tempoResposta;
+		System.out.println("Tempo da matriz sem threads em segundos: "+ tempoResposta);
+		//this.imprimirMatriz(matrizResultante);
 	}
 	
 	public void multiplicarComThreads(){
 		matrizResultanteComThread = new Integer[linhaMatriz1][colunaMatriz2];
-		povoarComZeroMatrizResultanteComThreads();
+		povoarComZeroMatrizResultante(matrizResultanteComThread);
 		
 		for (int linha = 0; linha < linhaMatriz1; linha++) {
 	        for (int coluna = 0; coluna < colunaMatriz2; coluna++) {
@@ -97,6 +76,7 @@ public class MultiplicaMatriz {
 	        }
 	    }
 		
+		long tempoResposta = System.currentTimeMillis();
 		for (Thread thread : threads) {
 			thread.start();
 		}
@@ -108,42 +88,54 @@ public class MultiplicaMatriz {
 				e.printStackTrace();
 			}
 		}
-		this.imprimirMatrizResultanteComThreads();
+		tempoResposta = System.currentTimeMillis() - tempoResposta;
+		System.out.println("Tempo da matriz com threads em milisegundos: "+ tempoResposta);
+		//this.imprimirMatriz(matrizResultanteComThread);
 	}
 	
-	private void imprimirMatrizResultante(){
+	public void multiplicarMatrizComThreadsSegundaAbordagem(){
+		matrizResultanteComThreadAborgadem2 = new Integer[linhaMatriz1][colunaMatriz2];
+		povoarComZeroMatrizResultante(matrizResultanteComThreadAborgadem2);
+		
+		for (int linha = 0; linha < linhaMatriz1; linha++) {
+			ThreadMultiplicacaoSegundaAbordagem thread2 = new ThreadMultiplicacaoSegundaAbordagem(linha, colunaMatriz1, 
+					colunaMatriz2, matriz1, matriz2, matrizResultanteComThreadAborgadem2);
+			threads2.add(thread2);
+		}
+		
+		long tempoResposta = System.currentTimeMillis();
+		for (Thread thread : threads2) {
+			thread.start();
+		}
+		
+		for (Thread thread : threads2) {
+			try {
+				thread.join();
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+		}
+		tempoResposta = System.currentTimeMillis() - tempoResposta;
+		System.out.println("Tempo da matriz com threads sehunda abordagem em milisegundos: "+ tempoResposta);
+		//imprimirMatriz(matrizResultanteComThreadAborgadem2);
+	}
+	
+	private void imprimirMatriz(Integer matriz[][]){
 		System.out.println("Matriz Resultante: ");
 		for (int linha = 0; linha < linhaMatriz1; linha++) {
 	        for (int coluna = 0; coluna < colunaMatriz2; coluna++) {
-	        	System.out.print(matrizResultante[linha][coluna]+ " ");
+	        	System.out.print(matriz[linha][coluna]+ " ");
 	        }
 	        System.out.println(" ");
 		}
 	}
 	
-	private void imprimirMatrizResultanteComThreads(){
-		System.out.println("Matriz Resultante com Threads: ");
+	private void povoarComZeroMatrizResultante(Integer matriz[][]){
 		for (int linha = 0; linha < linhaMatriz1; linha++) {
 	        for (int coluna = 0; coluna < colunaMatriz2; coluna++) {
-	        	System.out.print(matrizResultanteComThread[linha][coluna]+ " ");
-	        }
-	        System.out.println(" ");
-		}
-	}
-	
-	private void povoarComZeroMatrizResultante(){
-		for (int linha = 0; linha < linhaMatriz1; linha++) {
-	        for (int coluna = 0; coluna < colunaMatriz2; coluna++) {
-	        	matrizResultante[linha][coluna] = 0;
+	        	matriz[linha][coluna] = 0;
 	        }
 		}
 	}
 	
-	private void povoarComZeroMatrizResultanteComThreads(){
-		for (int linha = 0; linha < linhaMatriz1; linha++) {
-	        for (int coluna = 0; coluna < colunaMatriz2; coluna++) {
-	        	matrizResultanteComThread[linha][coluna] = 0;
-	        }
-		}
-	}
 }
