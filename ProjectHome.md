@@ -1,0 +1,1 @@
+Este projeto contém três abordagens para a multiplicação de matrizes em java. A primeira abordagem é sequencial, as duas últimas abordagens são utilizando threads.
